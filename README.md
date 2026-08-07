@@ -222,7 +222,7 @@ The classical map was better on average in all three spectral bands.
 
 ![Training time](figures/results/burgers_training_time.png)
 
-Under the exact four-qubit state-vector implementation, the frozen quantum model was approximately **8.9x slower** than the classical periodic control. This is a simulator-cost observation, not a statement about future hardware complexity.
+Under the exact four-qubit state-vector implementation, the frozen quantum model was approximately **8.9x slower** than the classical periodic control. This is a simulator-cost observation, not a statement about  hardware complexity.
 
 ---
 
@@ -382,6 +382,7 @@ For the full evidence trail, read:
 - [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md)
 - [`docs/SCIENTIFIC_INTERPRETATION.md`](docs/SCIENTIFIC_INTERPRETATION.md)
 - [`docs/WISER_BQP_Technical_Report.pdf`](docs/WISER_BQP_Technical_Report.pdf)
+- [View the project presentation](docs/presentation/Quantum_PINN_Representation_Audit__.pdf)
 - [`docs/FIGURE_INDEX.md`](docs/FIGURE_INDEX.md)
 - [`docs/VALIDATION.md`](docs/VALIDATION.md)
 
