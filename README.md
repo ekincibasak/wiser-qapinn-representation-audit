@@ -383,6 +383,7 @@ For the full evidence trail, read:
 - [`docs/SCIENTIFIC_INTERPRETATION.md`](docs/SCIENTIFIC_INTERPRETATION.md)
 - [`docs/WISER_BQP_Technical_Report.pdf`](docs/WISER_BQP_Technical_Report.pdf)
 - [View the project presentation](docs/presentation/Quantum_PINN_Representation_Audit__.pdf)
+- [Watch the 2-minute presentation](PASTE_GOOGLE_DRIVE_VIDEO_LINK_HERE)[https://drive.google.com/file/d/1wxC7mDGk0gx_jRPHkj3nY04Gjm_gh8FO/view?usp=sharing](https://drive.google.com/file/d/1wxC7mDGk0gx_jRPHkj3nY04Gjm_gh8FO/view?usp=sharing)
 - [`docs/FIGURE_INDEX.md`](docs/FIGURE_INDEX.md)
 - [`docs/VALIDATION.md`](docs/VALIDATION.md)
 
