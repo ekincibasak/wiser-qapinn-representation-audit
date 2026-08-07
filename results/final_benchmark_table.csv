@@ -1,0 +1,11 @@
+benchmark,model,trainable_parameters,relative_l2_mean,relative_l2_std,training_seconds_mean,evidence_level
+"Heat, 100 epochs, 3 seeds",Classical bottleneck,109,0.6105668942,0.0578737243,0.2727516963,controlled pilot
+"Heat, 100 epochs, 3 seeds","QAPINN, no entanglement",125,0.6605243683,0.028407925,5.088332624,controlled pilot
+"Heat, 100 epochs, 3 seeds","QAPINN, trainable ring",125,0.6501160463,0.0353654609,4.4414497807,controlled pilot
+"Heat, 100 epochs, 3 seeds","QAPINN, frozen ring",109,0.6503653129,0.0310180939,5.359274641,controlled pilot
+"Burgers, 500 epochs, 3 seeds",Classical bottleneck,109,0.649976902,0.0831127086,2.0404962757,architecture ablation
+"Burgers, 500 epochs, 3 seeds",Classical local trigonometric,109,0.4719172407,0.0348326229,2.080046687,architecture ablation
+"Burgers, 500 epochs, 3 seeds","QAPINN, trainable ring",125,0.5338633046,0.0484613681,25.0634157447,architecture ablation
+"Burgers, 500 epochs, 3 seeds","QAPINN, frozen ring",109,0.5252094337,0.0654810045,18.2582743107,architecture ablation
+"Burgers, 16 matched seed combinations",Classical local trigonometric,109,0.4475442073,0.0411059962,2.9933246909,robustness extension
+"Burgers, 16 matched seed combinations","QAPINN, frozen ring",109,0.488723693,0.069798925,26.5757389116,robustness extension

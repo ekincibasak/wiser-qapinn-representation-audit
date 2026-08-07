@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wiser-qapinn"
+version = "1.0.0"
+description = "Explainable and spectral controls for quantum-assisted physics-informed neural networks"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "matplotlib>=3.8",
+  "torch>=2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools]
+py-modules = [
+  "quantum_layer",
+  "classical_bottleneck",
+  "classical_trigonometric",
+  "classical_mlp",
+  "heat",
+  "burgers",
+  "derivatives",
+  "losses",
+  "spectra",
+  "train_heat",
+  "train_burgers",
+]
+packages = ["scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,677 @@
+\documentclass[10pt,a4paper]{article}
+
+% ============================================================
+% WISER 2026 BQP Challenge Technical Report
+% Rebuilt from the final validated numerical results.
+% Compile on Overleaf with pdfLaTeX.
+% ============================================================
+
+\usepackage[a4paper,top=1.45cm,bottom=1.55cm,left=1.60cm,right=1.60cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{graphicx}
+\usepackage{booktabs,tabularx,array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{url}
+
+\definecolor{wisernavy}{HTML}{17365D}
+\definecolor{wiserblue}{HTML}{197C8C}
+\definecolor{wisergold}{HTML}{B97900}
+\definecolor{wiserorange}{HTML}{D96B18}
+\definecolor{wisergray}{HTML}{F4F6F8}
+\definecolor{wiserdark}{HTML}{252A2E}
+\definecolor{wisergreen}{HTML}{236B55}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=wisernavy,
+  citecolor=wisernavy,
+  urlcolor=wiserblue,
+  pdftitle={What Does the Quantum Layer Learn?},
+  pdfauthor={Basak Ekinci}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.34em}
+\setlist[itemize]{leftmargin=1.35em,itemsep=0.10em,topsep=0.16em}
+\setlist[enumerate]{leftmargin=1.55em,itemsep=0.12em,topsep=0.18em}
+\renewcommand{\arraystretch}{1.08}
+
+\titleformat{\section}{\Large\bfseries\color{wisernavy}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{wiserdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{wiserdark}}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{0.78em}{0.22em}
+\titlespacing*{\subsection}{0pt}{0.48em}{0.16em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small WISER 2026 BQP Challenge}
+\fancyhead[R]{\small Explainable QAPINN Audit}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\captionsetup{font=small,labelfont=bf,justification=justified,singlelinecheck=false}
+\graphicspath{{figures/}}
+
+\newcommand{\RepositoryURL}{\texttt{[insert public GitHub repository URL]}}
+\newcommand{\resultbox}[1]{%
+  \begin{center}
+  \fcolorbox{wisernavy}{wisergray}{%
+    \begin{minipage}{0.92\linewidth}
+    \textbf{Evidence-supported result.} #1
+    \end{minipage}}
+  \end{center}}
+\newcommand{\turningbox}[1]{%
+  \begin{center}
+  \fcolorbox{wiserorange}{wisergray}{%
+    \begin{minipage}{0.92\linewidth}
+    \textbf{Interpretive turning point.} #1
+    \end{minipage}}
+  \end{center}}
+\newcommand{\claimbox}[1]{%
+  \begin{center}
+  \fcolorbox{wisergreen}{wisergray}{%
+    \begin{minipage}{0.92\linewidth}
+    \textbf{Claim boundary.} #1
+    \end{minipage}}
+  \end{center}}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% ============================================================
+% TITLE PAGE
+% ============================================================
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\vspace*{0.8cm}
+
+{\Large\bfseries\color{wisernavy} WISER 2026 BQP Challenge\par}
+\vspace{0.75cm}
+
+{\Huge\bfseries What Does the Quantum Layer Learn?\par}
+\vspace{0.28cm}
+{\LARGE A Controlled, Explainable, and Spectral Audit of\\Quantum-Assisted Physics-Informed Neural Networks\par}
+
+\vspace{0.95cm}
+\rule{0.84\textwidth}{0.7pt}
+\vspace{0.50cm}
+
+{\large \textbf{Author:} Başak Ekinci (solo submission)\par}
+{\large \textbf{Date:} 7 August 2026\par}
+{\large \textbf{Repository:} \RepositoryURL\par}
+
+\vfill
+
+\begin{minipage}{0.90\textwidth}
+\small
+\textbf{Headline result.} A four-qubit ring circuit improves nonlinear Burgers learning relative to a plain classical bottleneck, but the improvement does not survive a stronger parameter-matched classical control. A fixed trigonometric feature map reproduces much of the quantum representation geometry, achieves lower error across the strongest matched robustness study, and is substantially cheaper to train under ideal state-vector simulation. The evidence therefore identifies a useful \emph{periodic nonlinear inductive bias}, but not a robust quantum-specific advantage.
+\end{minipage}
+
+\vspace{0.55cm}
+\rule{0.84\textwidth}{0.7pt}
+\vspace{0.40cm}
+
+{\small Technical report for the WISER Summer Program 2026 BQP Challenge.\par}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+\pagenumbering{arabic}
+
+% ============================================================
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+Physics-Informed Neural Networks (PINNs) approximate differential-equation solutions while enforcing the governing PDE, initial condition, and boundary conditions through the training objective \cite{raissi2019}. Quantum-Assisted PINNs (QAPINNs) replace part of the classical network with a variational quantum circuit. A lower QAPINN error, however, is not sufficient evidence of a quantum-specific mechanism: changing the middle layer simultaneously changes nonlinearity, parameterization, representation geometry, and inductive bias. This study therefore asks a stricter attribution question: \emph{when a quantum middle layer improves PDE learning, does it create a useful representation that a comparable classical nonlinear map cannot reproduce?}
+
+The study implements classical PINNs and four-qubit QAPINNs for the Heat and viscous Burgers equations. The quantum layer is simulated exactly and differentiably in PyTorch, without hardware execution, finite-shot sampling, a noise model, or an external quantum SDK/framework. The controlled experiments compare no-entanglement, trainable-ring, and frozen-ring circuits; a classical bottleneck; and parameter-matched classical trigonometric controls. Evaluation includes dense-grid relative $L_2$ error, PDE/initial/boundary losses, Fourier-band errors, effective rank, feature redundancy, input sensitivity, linear probes, centered kernel alignment (CKA), runtime, and separated random seeds.
+
+Heat provides no quantum-specific benefit: the classical bottleneck is the most accurate model, while trainable and frozen quantum rings are nearly indistinguishable. Burgers initially produces an apparent quantum gain: the frozen ring reaches $0.5252\pm0.0655$ relative $L_2$ versus $0.6500\pm0.0831$ for the ordinary bottleneck. The decisive control changes the interpretation: a 109-parameter classical local trigonometric map reaches $0.4719\pm0.0348$ and has high geometric similarity to the frozen quantum representation (CKA $=0.936\pm0.050$). In the final $2\times4\times2$ matched seed extension, the classical map reaches $0.4475\pm0.0411$ versus $0.4887\pm0.0698$ for the frozen ring and wins 14 of 16 cells. The strongest evidence therefore supports useful periodic nonlinear structure, but not a robust quantum-specific advantage at this scale.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.99\textwidth]{project_visual_summary.png}
+\caption{Graphical summary of the full scientific argument. The study progresses from complementary PDE benchmarks and matched architectures through circuit ablations, an apparent Burgers quantum gain, a parameter-matched classical mimicry control, representation diagnostics, and seed-separated robustness.}
+\label{fig:graphical-summary}
+\end{figure}
+
+% ============================================================
+\section{Scientific Problem: Attribution, Not Just Accuracy}
+
+The main difficulty in evaluating a QAPINN is not measuring whether its error is lower; it is identifying \emph{why}. If a hybrid network outperforms a classical PINN, at least five explanations are immediately plausible: (i) trainable quantum rotations enlarge the useful function family, (ii) entangling gates create beneficial variable interactions, (iii) bounded trigonometric responses provide a useful periodic basis, (iv) the quantum layer acts as a regularizing bottleneck, or (v) the observed ranking is an initialization effect. A single accuracy comparison cannot distinguish these possibilities.
+
+For PDE learning, attribution is especially important because a low sampled residual does not guarantee that the learned function is physically accurate between collocation points. The middle representation must carry the spatial and temporal structure needed to satisfy the initial condition, boundary conditions, and solution spectrum. We therefore organize the study around three increasingly demanding questions:
+\begin{enumerate}
+  \item \textbf{Performance:} does inserting the quantum layer improve PDE accuracy relative to an ordinary classical bottleneck?
+  \item \textbf{Mechanism:} if an improvement appears, does it require entanglement or trainable quantum parameters, or can a fixed nonlinear transformation explain it?
+  \item \textbf{Quantum specificity:} after matching trainable parameter count, training data, initialization, optimization budget, and phase values, does the quantum feature map retain an advantage over a classical periodic map?
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{central_research_question.png}
+\caption{The attribution hypothesis tested in this work. The design is deliberately neutral: a useful quantum representation is possible, but so is classical reproduction through periodic nonlinearities or bottleneck effects.}
+\label{fig:central-question}
+\end{figure}
+
+\resultbox{The report is not structured as a leaderboard. Each experiment removes one alternative explanation for an apparent quantum gain, culminating in a parameter-matched classical feature-map control and a separated-seed robustness test.}
+
+% ============================================================
+\section{Benchmark PDEs: Smooth Diffusion Versus Nonlinear Mode Coupling}
+
+The two PDEs were selected to create a progression in representational difficulty. Heat is analytically solvable, smooth, and spectrally simple; Burgers adds nonlinear mode coupling and a steep spatial transition. This allows the same middle-layer hypothesis to be tested first in a low-complexity control and then in a genuinely nonlinear benchmark.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{pde_benchmarks.png}
+\caption{Why Heat and Burgers are complementary. Heat validates the implementation on a smooth low-frequency target; viscous Burgers probes whether the middle representation remains useful under nonlinearity, mode coupling, and sharper gradients.}
+\label{fig:pdes}
+\end{figure}
+
+\subsection{Heat equation}
+
+The linear control problem is
+\begin{align}
+ u_t &= \alpha u_{xx}, \qquad 0\le x\le1,\;0\le t\le1,\\
+ u(x,0)&=\sin(\pi x),\\
+ u(0,t)&=u(1,t)=0,
+\end{align}
+with exact solution
+\begin{equation}
+ u(x,t)=e^{-\alpha\pi^2t}\sin(\pi x).
+\end{equation}
+The solution is dominated by one smoothly decaying Fourier mode. Heat therefore serves as a controlled check of automatic differentiation, loss construction, gradient propagation through the quantum layer, and representation diagnostics.
+
+\subsection{Viscous Burgers equation}
+
+The nonlinear benchmark is
+\begin{align}
+ u_t+uu_x &= \nu u_{xx}, \qquad -1\le x\le1,\;0\le t\le1,\\
+ \nu&=\frac{0.01}{\pi},\\
+ u(x,0)&=-\sin(\pi x),\\
+ u(-1,t)&=u(1,t)=0.
+\end{align}
+The nonlinear $uu_x$ term couples modes and forms a steep central gradient. The reference solution is generated with the Cole--Hopf transformation \cite{cole1951,hopf1950} and stabilized Gauss--Hermite quadrature on a $401\times101$ grid. Quadrature refinement changed the reference by $2.95\times10^{-6}$ from order 40 to 80 and $6.69\times10^{-15}$ from order 80 to 120, supporting the order-120 solution as the evaluation target.
+
+% ============================================================
+\section{Models and the Actual Quantum Layer}
+
+\subsection{PINN objective and high-level architecture}
+
+A PINN represents the solution by $u_\theta(x,t)$ and evaluates the required derivatives with automatic differentiation. The total loss is
+\begin{equation}
+\mathcal{L}_{\mathrm{total}}
+=w_{\mathrm{PDE}}\mathcal{L}_{\mathrm{PDE}}
++w_{\mathrm{IC}}\mathcal{L}_{\mathrm{IC}}
++w_{\mathrm{BC}}\mathcal{L}_{\mathrm{BC}}.
+\end{equation}
+The principal generalization metric is the dense-grid relative error
+\begin{equation}
+\varepsilon_{L_2}
+=\frac{\|u_\theta-u_{\mathrm{ref}}\|_2}{\|u_{\mathrm{ref}}\|_2}.
+\end{equation}
+A small sampled PDE residual is not treated as sufficient evidence of solution quality because a function can satisfy the residual at collocation points while violating the initial condition, boundary conditions, or the dense-grid reference.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{pinn_qapinn_architecture.png}
+\caption{High-level comparison. Both models solve the same PDE task; the QAPINN inserts a four-dimensional quantum middle transformation between classical layers. The decisive question is whether this transformation provides information that a matched classical nonlinear map cannot reproduce.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Exact four-qubit implementation}
+
+The actual circuit used in the reported experiments is shown in Figure~\ref{fig:actual-circuit}. The hybrid model first maps $(x,t)$ through
+\begin{equation}
+(x,t)\rightarrow \mathrm{Linear}(2,8)\rightarrow\tanh
+\rightarrow\mathrm{Linear}(8,4)\rightarrow\tanh
+\rightarrow\boldsymbol{\phi},
+\end{equation}
+where $\boldsymbol{\phi}=(\phi_1,\phi_2,\phi_3,\phi_4)$ are bounded encoding angles. Starting from $|0000\rangle$, one $R_Y(\phi_i)$ gate encodes each angle on one qubit. For variational depth $\ell\in\{1,2\}$ and qubit $i$, the circuit then applies
+\begin{equation}
+R_Y(\theta_{\ell i})\;R_Z(\omega_{\ell i}),
+\end{equation}
+followed, when enabled, by the selected CNOT pattern. The main ring pattern is
+\begin{equation}
+0\rightarrow1,\qquad1\rightarrow2,\qquad2\rightarrow3,\qquad3\rightarrow0.
+\end{equation}
+The layer returns four expectation values,
+\begin{equation}
+\mathbf{z}_Q(\boldsymbol{\phi})
+=\bigl(\langle Z_0\rangle,\langle Z_1\rangle,\langle Z_2\rangle,\langle Z_3\rangle\bigr),
+\end{equation}
+which feed $\mathrm{Linear}(4,8)\rightarrow\tanh\rightarrow\mathrm{Linear}(8,1)$ to obtain $u_\theta(x,t)$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{actual_quantum_layer.png}
+\caption{Actual four-qubit, depth-two quantum layer used in the study. The figure separates classical preprocessing and $R_Y$ data encoding, the repeated trainable $R_Y/R_Z$ block, the three principal reported variants (no entanglement, trainable ring, and frozen ring), and Pauli-$Z$ readout back into the classical network. The backend is a custom exact PyTorch state-vector simulator; no hardware execution, finite-shot sampling, noise model, or external quantum SDK/framework is used.}
+\label{fig:actual-circuit}
+\end{figure}
+
+The three main quantum variants isolate different hypotheses:
+\begin{itemize}
+  \item \textbf{No-entanglement QAPINN:} 16 trainable quantum angles, but no CNOT coupling.
+  \item \textbf{Trainable-ring QAPINN:} the same trainable rotations plus ring CNOTs.
+  \item \textbf{Frozen-ring QAPINN:} the same ring circuit, but the 16 quantum angles are fixed during optimization.
+\end{itemize}
+Because the state dimension is only $2^4=16$, exact simulation is inexpensive enough to keep all circuit operations differentiable in PyTorch. The experiment therefore probes the mathematical feature map of a small ideal circuit; it is not a hardware benchmark.
+
+\subsection{Fair classical controls}
+
+The ordinary classical bottleneck uses the same surrounding network with a four-dimensional $\tanh$ representation. The strongest classical control instead replaces the quantum state evolution by a fixed periodic map while preserving the same trainable architecture and the same 16 phase constants. A representative local feature is
+\begin{equation}
+z_i^{\mathrm{trig}}
+=\frac12\left[
+\cos(\phi_i+\alpha_i)\cos(\phi_i+\beta_i)
++\cos(\phi_i+\gamma_i)\cos(\phi_i+\delta_i)
+\right].
+\end{equation}
+This classical local trigonometric model has exactly 109 trainable parameters, matching the frozen quantum ring. It is designed to test whether a bounded periodic nonlinear inductive bias is sufficient to reproduce the apparent circuit benefit.
+
+\begin{table}[H]
+\centering
+\caption{Models used in the controlled comparisons.}
+\label{tab:models}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X c}
+\toprule
+\textbf{Model} & \textbf{Middle transformation} & \textbf{Trainable parameters}\\
+\midrule
+Classical bottleneck & Four-dimensional $\tanh$ bottleneck & 109\\
+Classical local/ring trig & Fixed cosine-product feature map; 16 fixed phases & 109\\
+QAPINN, no entanglement & Four-qubit $R_Y/R_Z$ circuit without CNOTs & 125\\
+QAPINN, trainable ring & Ring CNOTs; 16 trainable quantum angles & 125\\
+QAPINN, frozen ring & Same ring circuit; 16 quantum angles fixed & 109\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Experimental Controls and Diagnostics}
+
+\subsection{Training protocol}
+
+Heat uses 100 epochs, 128 collocation points, 32 initial-condition points, 32 boundary points, Adam with learning rate $10^{-3}$, and seeds 11/22/33. The first Burgers pilot used the same point counts and 100 epochs; both models underfit severely, with mean relative $L_2$ errors $0.9289\pm0.0260$ (classical bottleneck) and $0.9274\pm0.0152$ (QAPINN). The final Burgers protocol therefore uses 500 epochs and $w_{\mathrm{IC}}=10$, while retaining the point counts, optimizer, and paired coordinates. Since the epoch budget and IC weight change together, this correction is interpreted as a combined training improvement rather than an isolated causal ablation.
+
+\subsection{Separated sources of randomness}
+
+The robustness study controls three random sources independently:
+\begin{itemize}
+  \item \texttt{data\_seed}: collocation, initial, and boundary coordinates;
+  \item \texttt{model\_seed}: initialization of the surrounding classical network;
+  \item \texttt{phase\_seed}: the 16 fixed quantum angles or exactly matched classical phase constants.
+\end{itemize}
+Within every final classical--quantum pair, training coordinates, initial classical weights, phase values, trainable parameter count, optimizer, loss weights, epoch budget, and evaluation grid are identical.
+
+\subsection{Spectral and representation diagnostics}
+
+For Burgers, spatial errors are decomposed into low-, middle-, and high-frequency bands using an odd extension of the spatial solution. The reported cutoffs are below 20\%, 20--50\%, and above 50\% of the available spatial-frequency range.
+
+For representation analysis, the four-dimensional middle-layer outputs are evaluated on a $41\times41$ $(x,t)$ grid. If $\sigma_i$ are singular values of the centered representation matrix,
+\begin{equation}
+p_i=\frac{\sigma_i^2}{\sum_j\sigma_j^2},\qquad
+r_{\mathrm{eff}}=\exp\!\left(-\sum_i p_i\log p_i\right).
+\end{equation}
+Effective rank near one indicates that most variance lies in one direction; larger values indicate that more independent directions are used. Linear CKA compares representation geometry up to orthogonal transformations and isotropic scaling \cite{kornblith2019}. Feature correlation, input sensitivity, and held-out linear probes provide complementary diagnostics. Gradient checks confirm nonzero trainable quantum gradients at four qubits and depth two; this small circuit shows no observed barren plateau, but the experiment is far too small to support a scaling claim \cite{mcclean2018}.
+
+% ============================================================
+\section{Heat: A Low-Complexity Control}
+
+\begin{table}[H]
+\centering
+\caption{Heat controlled pilot across seeds 11/22/33. Lower relative $L_2$ is better.}
+\label{tab:heat}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{Trainable} & \textbf{Relative $L_2$} & \textbf{Mean time (s)}\\
+\midrule
+\textbf{Classical bottleneck} & \textbf{109} & \textbf{$0.6106\pm0.0579$} & \textbf{0.27}\\
+Quantum, no entanglement & 125 & $0.6605\pm0.0284$ & 5.09\\
+Quantum, trainable ring & 125 & $0.6501\pm0.0354$ & 4.44\\
+Quantum, frozen ring & 109 & $0.6504\pm0.0310$ & 5.36\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\centering
+\includegraphics[width=\linewidth]{heat_relative_l2_ablation.png}
+\caption{Mean relative $L_2$.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\centering
+\includegraphics[width=\linewidth]{heat_effective_rank.png}
+\caption{Effective rank of internal representations.}
+\end{subfigure}
+\caption{Heat results. The classical bottleneck is the most accurate model. Ring quantum measurement outputs are strongly compressed, and training the quantum angles does not materially change the final error or representation geometry.}
+\label{fig:heat}
+\end{figure}
+
+The trainable and frozen ring models differ by only $2.5\times10^{-4}$ in mean relative $L_2$. Their measurement representations are almost identical geometrically (CKA approximately $0.999$), while the ring output has effective rank near $1.10$. Thus, for this smooth target, the circuit imposes a strongly compressed representation and the 16 trainable quantum angles add no measurable advantage over their frozen counterpart.
+
+\resultbox{Heat provides no evidence of a quantum-specific benefit. The plain classical bottleneck is more accurate and much faster, while trainable and frozen quantum-ring representations are essentially indistinguishable.}
+
+% ============================================================
+\section{Burgers: From Apparent Quantum Gain to Classical Reproduction}
+
+The corrected 500-epoch Burgers protocol first establishes that the middle representation matters once the initial condition is learned more strongly. Relative $L_2$ falls from $0.9289$ to $0.6500$ for the classical bottleneck and from $0.9274$ to $0.5339$ for the trainable-ring QAPINN. The architecture ablation then identifies which component is responsible for the improvement.
+
+\begin{table}[H]
+\centering
+\caption{Improved Burgers architecture comparison, 500 epochs, $w_{\mathrm{IC}}=10$, seeds 11/22/33.}
+\label{tab:burgers}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{Trainable} & \textbf{Relative $L_2$} & \textbf{Mean time (s)}\\
+\midrule
+Classical bottleneck & 109 & $0.6500\pm0.0831$ & 2.04\\
+\textbf{Classical local trigonometric} & \textbf{109} & \textbf{$0.4719\pm0.0348$} & \textbf{2.08}\\
+Classical ring trigonometric & 109 & $0.5857\pm0.0597$ & 2.28\\
+Quantum, no entanglement & 125 & $0.5911\pm0.0141$ & 25.42\\
+Quantum, trainable ring & 125 & $0.5339\pm0.0485$ & 25.06\\
+Quantum, frozen ring & 109 & $0.5252\pm0.0655$ & 18.26\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.84\textwidth]{burgers_architecture_ablation.png}
+\caption{Improved Burgers architecture ablation. Ring-connected quantum variants outperform the no-entanglement QAPINN, but the parameter-matched classical local trigonometric control is the most accurate model overall.}
+\label{fig:burgers-ablation}
+\end{figure}
+
+The first comparison appears quantum-favorable: the frozen ring reduces mean error by about 19.2\% relative to the ordinary bottleneck. Two controls then change the causal interpretation. First, the frozen ring is slightly better than the trainable ring, so successful optimization of the 16 quantum angles is not required. Second, the 109-parameter classical local trigonometric map reaches $0.4719$, reducing error by a further 10.2\% relative to the frozen ring.
+
+\turningbox{The ring circuit is useful relative to a weak classical bottleneck, but the same-size classical periodic map is more useful. The correct question is therefore no longer ``does the circuit help?'' but ``what representation does it create, and is that representation quantum-specific?''}
+
+% ============================================================
+\section{Representation Audit: What Does the Middle Layer Actually Encode?}
+
+Representation diagnostics explain the Burgers ranking rather than simply restating it.
+
+\begin{table}[H]
+\centering
+\caption{Key Burgers representation diagnostics across three seeds.}
+\label{tab:repr}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Representation} & \textbf{$r_{\mathrm{eff}}$} & \textbf{Mean $|r|$} & \textbf{$R^2(x)$} & \textbf{$R^2(t)$}\\
+\midrule
+Classical bottleneck & $1.390\pm0.308$ & 0.731 & 0.990 & 0.958\\
+\textbf{Classical local trig} & \textbf{$2.079\pm0.229$} & \textbf{0.532} & 0.669 & $-0.016$\\
+Frozen quantum ring & $1.602\pm0.473$ & 0.685 & 0.788 & 0.255\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{burgers_effective_rank.png}
+\caption{Effective dimensionality of improved Burgers middle-layer outputs. The classical local trigonometric map has the largest effective rank and the lowest mean feature redundancy among the principal compared representations.}
+\label{fig:rank}
+\end{figure}
+
+The ordinary bottleneck preserves the input coordinates almost linearly, yet that transparency does not produce the best PDE approximation. The classical local trigonometric map reorganizes the inputs into a less redundant nonlinear representation. A negative held-out $R^2(t)$ for a linear probe does not imply that time information disappears; it means that time is no longer linearly recoverable from the four outputs and may remain encoded through nonlinear combinations.
+
+The strongest geometric comparison is
+\begin{equation}
+\mathrm{CKA}\!\left(\mathbf{z}_{\mathrm{trig-local}},\mathbf{z}_{\mathrm{Q-frozen-ring}}\right)
+=0.936\pm0.050.
+\end{equation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.62\textwidth]{burgers_representation_cka.png}
+\caption{Mean linear CKA among improved Burgers middle-layer outputs. The classical local trigonometric and frozen quantum ring representations are strongly aligned despite being generated by different computational mechanisms.}
+\label{fig:cka}
+\end{figure}
+
+High CKA does not imply algebraic identity. It means that the two models organize the same space--time points in a highly similar representation geometry. Combined with the effective-rank result, the evidence is consistent with the quantum ring generating a useful periodic nonlinear geometry while the classical local map generates a closely related geometry with more independent directions.
+
+\resultbox{The classical local trigonometric map reproduces much of the frozen quantum representation geometry (CKA $0.936\pm0.050$) while retaining higher effective rank and lower feature redundancy. The tested quantum layer therefore does not reveal an inaccessible representation space in this regime.}
+
+% ============================================================
+\section{Robustness: Separating Data, Model, and Phase Seeds}
+
+A favorable random seed can create a misleading architecture ranking. The parameter-matched classical local trig and frozen quantum ring were therefore compared through progressively stronger seed controls. The final study varies two data seeds (11, 22), four model seeds (777, 888, 999, 1111), and two phase seeds (101, 303), producing 16 matched cells.
+
+\begin{table}[H]
+\centering
+\caption{Progression of the robustness analysis.}
+\label{tab:robustness}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Study} & \textbf{Classical trig} & \textbf{Frozen quantum} & \textbf{Paired wins}\\
+\midrule
+5 phase seeds & $0.4329\pm0.0097$ & $0.4461\pm0.0379$ & classical 4/5\\
+$2\times2\times2$ pilot & $0.4286\pm0.0177$ & $0.4685\pm0.0404$ & classical 7/8\\
+$2\times4\times2$ extension & $0.4475\pm0.0411$ & $0.4887\pm0.0698$ & classical 14/16\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.97\textwidth]{burgers_relative_l2_16_cells.png}
+\caption{All 16 matched Burgers comparisons in the final extension. The classical local trigonometric map has lower relative $L_2$ error in 14 cells. The two quantum wins show that individual initializations can reverse the ranking, but that reversal is not robust across the tested design.}
+\label{fig:16cells}
+\end{figure}
+
+Averaging over data and phase levels within each neural-network initialization produces four primary blocks. Define
+\begin{equation}
+\Delta=\varepsilon_{L_2}^{\mathrm{quantum}}-\varepsilon_{L_2}^{\mathrm{classical}}.
+\end{equation}
+Positive $\Delta$ favors the classical control. All four block means are positive.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.74\textwidth]{burgers_model_seed_blocks.png}
+\caption{Mean paired difference within each model-initialization block. All four block means favor the classical trigonometric map. With only four primary blocks, the exact two-sided sign-test result is $p=0.125$, so this is robustness evidence rather than formal statistical confirmation.}
+\label{fig:blocks}
+\end{figure}
+
+The aggregate final comparison is
+\begin{equation}
+0.4475\pm0.0411\quad\text{(classical local trig)}
+\qquad\text{vs.}\qquad
+0.4887\pm0.0698\quad\text{(frozen quantum ring)}.
+\end{equation}
+The result is therefore not driven by one favorable phase, one collocation sample, or one neural-network initialization, although additional independent model-seed blocks would still be required for a confirmatory statistical claim.
+
+% ============================================================
+\section{Spectral Fidelity, Physical Loss Balance, and Cost}
+
+The final 16-cell extension was also evaluated in the spatial Fourier domain at $t=0.5$. The classical map has lower mean error in all three reported bands.
+
+\begin{table}[H]
+\centering
+\caption{Final spatial spectral errors at $t=0.5$, normalized by total reference spectral energy.}
+\label{tab:spectral}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Band} & \textbf{Classical local trig} & \textbf{Frozen quantum ring}\\
+\midrule
+Low & \textbf{$0.5199\pm0.0384$} & $0.5540\pm0.0647$\\
+Middle & \textbf{$0.0549\pm0.0020$} & $0.0559\pm0.0022$\\
+High & \textbf{$0.0143\pm0.0035$} & $0.0161\pm0.0036$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.59\textwidth}
+\centering
+\includegraphics[width=\linewidth]{burgers_spectral_errors_t_0p5.png}
+\caption{Fourier-band error.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.38\textwidth}
+\centering
+\includegraphics[width=\linewidth]{burgers_training_time.png}
+\caption{Mean training time.}
+\end{subfigure}
+\caption{Final spectral and computational comparison. The classical control is slightly more accurate in all three spatial-frequency bands and is approximately $26.58/2.99\simeq8.9$ times faster than the exact state-vector quantum simulation.}
+\label{fig:spectral-cost}
+\end{figure}
+
+A subtle result further motivates the multi-metric analysis. In the final extension, the frozen quantum model has a slightly lower mean sampled PDE loss ($0.2139\pm0.0639$ versus $0.2355\pm0.0390$), but worse dense-grid relative $L_2$, initial-condition loss, and boundary-condition loss. Lower collocation residual therefore does not automatically imply better global PDE generalization. The classical trigonometric map better balances the physical constraints and the dense reference solution.
+
+% ============================================================
+\section{Discussion: What Does the Quantum Layer Learn?}
+
+\subsection{The Heat--Burgers contrast}
+
+Heat is smooth and dominated by a single decaying mode. A small classical bottleneck already provides a suitable representation, while the ring quantum measurements collapse toward one effective direction. Burgers is more demanding: nonlinear mode coupling and a steep spatial gradient make the choice of middle feature map consequential. Both the ring circuit and the explicit trigonometric control provide bounded periodic nonlinear features that improve over the plain bottleneck.
+
+This interpretation is consistent with the broader observation that periodic feature mappings can improve coordinate-based neural representations of high-frequency or sharply varying targets \cite{sitzmann2020}. The comparison is conceptual rather than an assertion that the quantum circuit is a SIREN; the common element is structured periodic nonlinearity.
+
+\subsection{What the circuit ablations establish}
+
+The no-entanglement, trainable-ring, and frozen-ring experiments separate three mechanisms. Ring-connected circuits outperform the no-entanglement circuit in the three-seed Burgers study, showing that coupling between encoded variables changes the useful function family. Yet the frozen ring is slightly better than the trainable ring, so the gain does not require successful learning of the quantum angles themselves. The CNOT structure therefore matters as a feature-map transformation, but the result does not by itself identify an irreducibly quantum resource.
+
+Variational rotation circuits with Pauli measurements naturally generate trigonometric/Fourier dependence on encoded data \cite{schuld2021}. The classical mimicry control tests this mechanism directly: an explicit periodic map with the same trainable parameter count produces a highly aligned representation and better downstream PDE accuracy.
+
+\subsection{Strongest supported interpretation}
+
+The experimental sequence supports the following mechanism:
+\begin{enumerate}
+  \item Burgers benefits from a periodic nonlinear middle representation relative to a plain bottleneck.
+  \item The ring quantum circuit is one implementation of that useful transformation.
+  \item Training the circuit angles is not required for the observed gain.
+  \item A parameter-matched classical trigonometric map reproduces much of the quantum geometry, retains more independent feature directions, and performs better on average.
+  \item The tested improvement therefore cannot presently be assigned to a robust quantum-specific mechanism.
+\end{enumerate}
+
+\claimbox{The study finds a useful representation effect, not a demonstrated quantum advantage. The quantum circuit is scientifically informative because it reveals a beneficial periodic nonlinear inductive bias; the matched classical controls show that this bias is not inaccessible to a conventional computation at the tested scale.}
+
+% ============================================================
+\section{Limitations and Future Tests}
+
+\subsection{Current claim boundary}
+
+\begin{itemize}
+  \item \textbf{Ideal state-vector simulation.} No finite-shot uncertainty, gate noise, hardware topology, calibration drift, or measurement mitigation is included.
+  \item \textbf{Small circuit.} Four qubits and depth two cannot support claims about asymptotic scaling, large-system expressivity, or hardware speedup.
+  \item \textbf{Limited independent replication.} Heat and the main architecture ablations use three seeds. The strongest extension has 16 matched cells but only four primary model-initialization blocks; the block-level sign test is $p=0.125$.
+  \item \textbf{Narrow nonlinear regime.} The final Burgers benchmark uses one viscosity, $\nu=0.01/\pi$, one four-qubit encoding family, and Pauli-$Z$ readout.
+  \item \textbf{Geometric rather than symbolic equivalence.} CKA $0.936$ supports similar representation geometry, not an exact algebraic identity between the classical and quantum maps.
+  \item \textbf{No quantum-advantage claim.} The reported data do not justify one.
+\end{itemize}
+
+\subsection{A scientifically grounded roadmap beyond Heat and Burgers}
+
+The present study should be viewed as a \emph{diagnostic stage}, not as evidence that the tested QAPINN is ready for deployment in a complex physical system. Heat and Burgers were selected because they allow mechanism-level questions---spectral learning, entanglement, representation geometry, classical mimicry, and seed sensitivity---to be studied under controlled conditions. A scientifically defensible next step is therefore to preserve these controls while increasing physical complexity in stages rather than jumping directly to a large application.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.99\textwidth]{future_roadmap.png}
+\caption{Roadmap from the present controlled benchmarks to more realistic physics problems. The current work occupies the diagnostic stage: Heat and viscous Burgers are used to isolate representation and optimization effects. A stronger future program would first move to coupled or higher-dimensional PDEs, then to candidate application classes such as computational fluid dynamics, plasma/MHD flows, and transport in materials, and finally to inverse problems in which unknown physical parameters are inferred from sparse or noisy data. These are proposed research directions, not validated applications of the present model.}
+\label{fig:future-roadmap}
+\end{figure}
+
+The roadmap in Fig.~\ref{fig:future-roadmap} deliberately separates \emph{methodological validation} from \emph{application}. The first requirement is to establish that any apparent quantum effect survives stronger classical controls, broader seed replication, and more demanding PDE structure. Only then is it meaningful to ask whether the same mechanism remains useful in coupled fields, higher-dimensional domains, or experimentally constrained inverse problems.
+
+\subsection{Most informative next experiments}
+
+\begin{enumerate}
+  \item \textbf{Strengthen the present diagnostic benchmark.} Add more independent network-initialization blocks and repeat Burgers across several viscosities, especially lower-viscosity regimes with sharper gradients. In parallel, strengthen the classical comparison set with trainable/random Fourier features, SIREN-style activations, and coupled periodic maps under matched parameter and compute budgets.
+  \item \textbf{Move to coupled and higher-dimensional PDEs.} Test reaction--diffusion, advection--diffusion, wave or Schr\"odinger-type equations, and two-dimensional benchmark systems in which multiple modes or fields interact. The same ablation logic---no entanglement, trainable ring, frozen ring, and matched classical periodic controls---should be preserved.
+  \item \textbf{Map circuit design to PDE structure.} Vary quantum depth, qubit count, data re-uploading, observables, entanglement topology, and layer placement one factor at a time. Derive the implemented $\langle Z_i\rangle$ outputs as explicit trigonometric polynomials and compare their frequency support with the classical controls.
+  \item \textbf{Introduce realistic quantum execution effects only after the mechanism is stable.} Add finite-shot simulation first, then controlled noise models, before considering hardware execution. This ordering separates sampling uncertainty from device noise and prevents hardware effects from obscuring the representation question.
+  \item \textbf{Test candidate real-world physics classes.} If the controlled mechanism remains useful, extend the audit to computational fluid dynamics, simplified plasma or magnetohydrodynamic flows, and transport problems in materials or defect-mediated systems. These applications should be treated as new validation studies rather than assumed consequences of the current Burgers result.
+  \item \textbf{Prioritize inverse problems as a distinct scientific test.} Evaluate whether the hybrid representation is useful for estimating unknown viscosity or diffusivity, source terms, boundary conditions, or latent physical parameters from sparse/noisy observations. Inverse settings may reveal different inductive-bias requirements from forward PDE solution.
+\end{enumerate}
+
+This progression keeps the central methodological lesson of the present study intact: increasing physical realism should not weaken the quality of the controls. Any future claim of quantum-specific benefit should remain conditional on parameter-matched classical baselines, representation-level diagnostics, spectral analysis, and robustness across independent sources of randomness.
+
+% ============================================================
+\section{Conclusion}
+
+The project began with an apparent architecture effect and progressively tested whether that effect survived stronger causal controls. Heat established the low-complexity baseline: the classical bottleneck was more accurate, and the trainable/frozen quantum rings were nearly indistinguishable. Burgers then revealed a genuine middle-layer effect: the frozen ring substantially improved over the ordinary classical bottleneck. The decisive classical control changed the interpretation. A parameter-matched local trigonometric map achieved lower error, produced a strongly aligned latent geometry (CKA $0.936\pm0.050$), retained higher effective rank, won 14 of 16 final matched comparisons, was slightly more accurate in every reported spectral band, and was approximately $8.9\times$ faster under exact state-vector simulation.
+
+\begin{equation}
+\boxed{\text{Useful nonlinear structure was found, but no robust quantum-specific advantage was demonstrated.}}
+\end{equation}
+
+The primary contribution is therefore explanatory. The actual four-qubit circuit supplies a useful bounded periodic nonlinear transformation on a nonlinear PDE, but the benefit is reproducible and exceeded by an equally sized classical feature map. Future QAPINN claims should therefore be evaluated against classical controls that are matched not only in parameter count, but also in periodicity, bottleneck dimension, initialization, representation geometry, spectral behavior, and seed robustness.
+
+% ============================================================
+\section*{Reproducibility and Repository}
+\addcontentsline{toc}{section}{Reproducibility and Repository}
+
+All numerical figures in this report are generated from the project code. The repository contains the Heat and Burgers PDE implementations, Cole--Hopf reference generator, classical bottleneck and trigonometric models, custom differentiable four-qubit PyTorch state-vector layer, training and ablation scripts, separated-seed experiments, representation diagnostics, spectra, compact result summaries, and unit tests.
+
+Recommended validation sequence:
+\begin{verbatim}
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+pytest
+\end{verbatim}
+The public GitHub repository URL should be inserted on the title page before submission.
+
+% ============================================================
+\begin{thebibliography}{9}
+
+\bibitem{raissi2019}
+M. Raissi, P. Perdikaris, and G. E. Karniadakis,
+``Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations,''
+\emph{Journal of Computational Physics}, vol. 378, pp. 686--707, 2019.
+
+\bibitem{cole1951}
+J. D. Cole,
+``On a quasi-linear parabolic equation occurring in aerodynamics,''
+\emph{Quarterly of Applied Mathematics}, vol. 9, no. 3, pp. 225--236, 1951.
+
+\bibitem{hopf1950}
+E. Hopf,
+``The partial differential equation $u_t+uu_x=\mu u_{xx}$,''
+\emph{Communications on Pure and Applied Mathematics}, vol. 3, pp. 201--230, 1950.
+
+\bibitem{kornblith2019}
+S. Kornblith, M. Norouzi, H. Lee, and G. Hinton,
+``Similarity of neural network representations revisited,''
+in \emph{Proceedings of ICML}, 2019.
+
+\bibitem{schuld2021}
+M. Schuld, R. Sweke, and J. J. Meyer,
+``Effect of data encoding on the expressive power of variational quantum-machine-learning models,''
+\emph{Physical Review A}, vol. 103, 032430, 2021.
+
+\bibitem{mcclean2018}
+J. R. McClean et al.,
+``Barren plateaus in quantum neural network training landscapes,''
+\emph{Nature Communications}, vol. 9, 4812, 2018.
+
+\bibitem{sitzmann2020}
+V. Sitzmann et al.,
+``Implicit neural representations with periodic activation functions,''
+in \emph{Advances in Neural Information Processing Systems}, 2020.
+
+\bibitem{wiser2026}
+WISER,
+``Summer Program 2026 BQP Challenge,'' 2026.
+\url{https://www.thewiser.org/summer-program-2026/bqpchallenge}.
+
+\end{thebibliography}
+
+\end{document}
