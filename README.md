@@ -19,7 +19,7 @@ Primary contributions: scientific formulation and mathematical modeling; impleme
 
 **Contact:** `baekinci@gmail.com`
 
-> **Submission check:** Replace the placeholder above with the email address you want reviewers to use before making the repository public.
+
 
 ---
 
