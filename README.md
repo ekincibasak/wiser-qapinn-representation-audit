@@ -12,6 +12,13 @@ The project asks a deliberately stricter question than *“does a QAPINN beat on
 
 
 ## Team and contact
+### Recognition
+
+**Second Place — WISER Summer Program 2026 Industry Challenge Demo Day**
+
+Project entry: **Quantum Lens (BQP Challenge)**
+
+This recognition relates to the WISER Industry Challenge. The accompanying research evaluates quantum-assisted physics-informed neural networks against matched classical alternatives; it does not claim a demonstrated quantum-specific advantage.
 
 **Başak Ekinci — Research Lead and Developer**
 
